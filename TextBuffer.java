@@ -4,9 +4,9 @@ import javafx.scene.text.Text;
  * TextBuffer class is a Fast DLL used to store the text within the Editor
  */
 public class TextBuffer {
-    Node sentinel;
-    Node curr; // stores pointer to the current node you're at
-    int size;
+    private Node sentinel;
+    private Node curr; // stores pointer to the current node you're at
+    private int size;
 
     public TextBuffer() {
         sentinel = new Node();
@@ -20,7 +20,20 @@ public class TextBuffer {
      * curr points to text that was just typed
      */
     public void add(Text text) {
-
+        Node toAdd = new Node(text);
+        if (curr.next == sentinel) {
+            toAdd.prev = curr;
+            toAdd.next = sentinel;
+            curr.next = toAdd;
+            sentinel.prev = toAdd;
+        } else {
+            Node next = curr.next;
+            toAdd.prev = curr;
+            toAdd.next = next;
+            next.prev = toAdd;
+            curr.next = toAdd;
+        }
+        curr = curr.next;
         size++;
     }
 
@@ -29,8 +42,20 @@ public class TextBuffer {
      * Removing can only occur before curr
      */
     public void remove() {
-
-        size--;
+        if (curr != sentinel) {
+            if (curr.next == sentinel) {
+                sentinel.prev = curr.prev;
+                curr.prev.next = sentinel;
+                curr = curr.prev;
+            } else {
+                Node prev = curr.prev;
+                Node next = curr.next;
+                prev.next = next;
+                next.prev = prev;
+                curr = prev;
+            }
+            size--;
+        }
     }
 
     public void currNext() {
@@ -46,11 +71,7 @@ public class TextBuffer {
     }
 
 
-
-
-
-
-    private class Node {
+    private static class Node {
         Node prev;
         Node next;
         Text data;
@@ -58,7 +79,7 @@ public class TextBuffer {
         /**
          * Empty constructor for sentinel nodes
          */
-        public Node() {
+        Node() {
             prev = this;
             next = this;
             data = null;
@@ -67,7 +88,7 @@ public class TextBuffer {
         /**
          * Constructor for text nodes
          */
-        public Node(Text text) {
+        Node(Text text) {
             data = text;
         }
     }

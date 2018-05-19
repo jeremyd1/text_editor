@@ -14,16 +14,24 @@ import javafx.scene.text.Text;
 public class Editor extends Application {
         private Group root;
         private Scene scene;
+        TextBuffer buffer = new TextBuffer(); // Fast DLL for storing text
+
+        public final static int WINDOW_HEIGHT = 500;
+        public final static int WINDOW_WIDTH = 500;
 
         @Override
         public void start(Stage stage) {
             root = new Group();
-            scene = new Scene(root, 500,500);
+            scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-            Text t1 = new Text(10,50, "h");
-            Text t2 = new Text(20, 50, "i");
-            root.getChildren().add(t2);
-            root.getChildren().add(t1);
+            // Cursor
+
+
+
+//            Text t1 = new Text(10,50, "h");
+//            Text t2 = new Text(20, 50, "i");
+//            root.getChildren().add(t2);
+//            root.getChildren().add(t1);
 
 
 

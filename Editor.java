@@ -9,39 +9,135 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.text.Text;
+import javafx.scene.text.Font;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.event.EventHandler;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
+import javafx.event.ActionEvent;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
+import javafx.geometry.VPos;
 
+
+// TODO: HOW TO HANDLE ENTERS?
 
 public class Editor extends Application {
-        private Group root;
-        private Scene scene;
-        TextBuffer buffer = new TextBuffer(); // Fast DLL for storing text
+    private Group root;
+    private Scene scene;
+    private TextBuffer buffer; // Fast DLL for storing text
+    private Rectangle cursor;
 
-        public final static int WINDOW_HEIGHT = 500;
-        public final static int WINDOW_WIDTH = 500;
+    private final static int WINDOW_HEIGHT = 500;
+    private final static int WINDOW_WIDTH = 500;
+    private final static int FONT_SIZE = 12;
+    private final static String FONT_NAME = "Verdana";
+    private final static int STARTING_X = 5;
+    private final static int STARTING_Y = 0;
 
-        @Override
-        public void start(Stage stage) {
-            root = new Group();
-            scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-            // Cursor
-
-
-
-//            Text t1 = new Text(10,50, "h");
-//            Text t2 = new Text(20, 50, "i");
-//            root.getChildren().add(t2);
-//            root.getChildren().add(t1);
-
-
-
-            stage.setTitle("Jeremy's Editor");
-            stage.setScene(scene);
-            stage.show();
-        }
-
-        public static void main(String[] args) {
-            launch(args);
-        }
-
+    /** Constructor for instantiating Cursor, TextBuffer */
+    public Editor() {
+            buffer = new TextBuffer();
+            cursor = new Rectangle(STARTING_X, STARTING_Y, 1, FONT_SIZE);
+            cursor.setFill(Color.BLACK); // sets color of rectangle to black
     }
+    
+	/** Event Handler for handling keys that get pressed */
+	private class KeyEventHandler implements EventHandler<KeyEvent> {
+		private Text textToDisplay;
+
+		// Constructor creates a text placeholder at top left corner
+		public KeyEventHandler() {
+			textToDisplay = new Text(STARTING_X, STARTING_Y, "");
+			textToDisplay.setTextOrigin(VPos.TOP);
+			textToDisplay.setFont(Font.font(FONT_NAME, FONT_SIZE));
+			root.getChildren().add(textToDisplay);
+		}
+
+		@Override
+		public void handle(KeyEvent keyEvent) {
+			// Check if a character-generating key was typed
+			if (keyEvent.getEventType() == keyEvent.KEY_TYPED) {
+				String character = keyEvent.getCharacter();
+				if (character.length() > 0 && character.charAt(0) != 8 && !keyEvent.isShortcutDown()) {
+					textToDisplay.setText(character); // replaces "" with actual character
+					keyEvent.consume(); // marks key event as finished
+				}
+			} else if (keyEvent.getEventType() == keyEvent.KEY_PRESSED) {
+				KeyCode code = keyEvent.getCode(); // only key pressed key events have an associated code
+
+				// Need to handle arrows, backspace, shortcut keys (command)
+				// Shortcut: + or =, -, s
+				if (code == KeyCode.UP) {
+					// DO SOMETHING
+				} else if (code == KeyCode.DOWN) {
+					// DO SOMETHING
+				} else if (code == KeyCode.LEFT) {
+					// DO SOMETHING
+				} else if (code == KeyCode.RIGHT) {
+					// DO SOMETHING
+				} else if (code == KeyCode.BACK_SPACE) {
+					// DO SOMETHING
+				} else {
+
+				}
+			}
+		}
+	}
+
+    /** Event Handler for handling blinking cursor */
+    private class BlinkCursorEventHandler implements EventHandler<ActionEvent> {
+    	private int currentColorIndex;
+    	private Color[] boxColors;
+
+    	public BlinkCursorEventHandler() {
+    		currentColorIndex = 0;
+    		boxColors =  new Color[] {Color.BLACK, Color.WHITE};
+    		changeColor();
+    	}
+
+    	private void changeColor() {
+    		cursor.setFill(boxColors[currentColorIndex]);
+    		currentColorIndex = (currentColorIndex + 1) % boxColors.length;
+    	}
+
+    	@Override
+    	public void handle(ActionEvent event) {
+    		changeColor();
+    	}
+    }
+
+    public void makeCursorBlink() {
+    	final Timeline timeline = new Timeline();
+    	timeline.setCycleCount(Timeline.INDEFINITE);
+    	BlinkCursorEventHandler blinkCursor = new BlinkCursorEventHandler(); // instantiate event handler for blinking
+    	KeyFrame keyFrame = new KeyFrame(Duration.seconds(0.8), blinkCursor); // create blinking key frame
+    	timeline.getKeyFrames().add(keyFrame); // add blinking key frame to timeline
+    	timeline.play();
+    }
+
+    @Override
+    public void start(Stage stage) {
+        root = new Group();
+        scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+        // Add blinking cursor to screen 
+        root.getChildren().add(cursor);
+        makeCursorBlink();
+
+        // Have key event handler handle keyboard inputs and then output to screen
+		EventHandler<KeyEvent> keyEventHandler = new KeyEventHandler();
+		scene.setOnKeyTyped(keyEventHandler);
+		scene.setOnKeyPressed(keyEventHandler);
+
+        stage.setTitle("Jeremy's Editor");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

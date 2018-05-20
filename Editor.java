@@ -23,17 +23,16 @@ import javafx.geometry.VPos;
 
 
 // TODO: HOW TO HANDLE ENTERS? KEY PRESSED - KeyCode.ENTER
-// TODO: Height of cursor off?
 
 public class Editor extends Application {
     private Group root;
-    private Scene scene;
     private TextBuffer buffer; // Fast DLL for storing text
     private Rectangle cursor;
     private int cursorX;
     private int cursorY;
     private int windowHeight;
     private int windowWidth;
+    private double textHeight;
 
     private final static int STARTING_WINDOW_HEIGHT = 500;
     private final static int STARTING_WINDOW_WIDTH = 500;
@@ -50,11 +49,12 @@ public class Editor extends Application {
 		windowHeight = STARTING_WINDOW_HEIGHT;
 		windowWidth = STARTING_WINDOW_WIDTH;
 
-		// t is a temporary Text obj used for determining the height of the font so that cursor
-		// height can be set
+		// t is a temporary Text obj used for determining the height of the font so that
+		// cursor height can be set
 		Text t = new Text(0, 0, "");
 		t.setFont(Font.font(FONT_NAME, FONT_SIZE));
-		cursor = new Rectangle(cursorX, cursorY, 1, t.getLayoutBounds().getHeight());
+		textHeight = t.getLayoutBounds().getHeight();
+		cursor = new Rectangle(cursorX, cursorY, 1, textHeight);
 		cursor.setFill(Color.BLACK); // sets color of rectangle to black
     }
     
@@ -69,7 +69,7 @@ public class Editor extends Application {
 				String character = keyEvent.getCharacter();
 				if (character.length() > 0 && character.charAt(0) != 8 && !keyEvent.isShortcutDown()) {
 					// Create a new text object containing the typed character
-					textToDisplay = new Text(cursorX, cursorY, character);
+					textToDisplay = new Text(character);
 					textToDisplay.setTextOrigin(VPos.TOP);
 					textToDisplay.setFont(Font.font(FONT_NAME, FONT_SIZE));
 
@@ -77,9 +77,23 @@ public class Editor extends Application {
 					buffer.add(textToDisplay);
 					root.getChildren().add(textToDisplay);
 
-					// Update cursor position
+					// Update Text and cursor position
+					int prevX = cursorX;
 					cursorX += (int) Math.rint(textToDisplay.getLayoutBounds().getWidth());
-					cursor.setX(cursorX);
+					if (cursorX > windowWidth) { // move cursor to new line and display Text there
+						cursorX = STARTING_X;
+						cursorY += textHeight;
+						textToDisplay.setX(cursorX);
+						textToDisplay.setY(cursorY);
+						cursorX += textToDisplay.getLayoutBounds().getWidth();
+						cursor.setX(cursorX);
+					} else { // display Text normally and move cursor normally
+						textToDisplay.setX(prevX);
+						textToDisplay.setY(cursorY);
+						cursor.setX(cursorX);
+					}
+					cursor.setY(cursorY);
+
 
 					// marks key event as finished
 					keyEvent.consume();
@@ -117,7 +131,7 @@ public class Editor extends Application {
     	private int currentColorIndex;
     	private Color[] boxColors;
 
-    	public BlinkCursorEventHandler() {
+    	private BlinkCursorEventHandler() {
     		currentColorIndex = 0;
     		boxColors =  new Color[] {Color.BLACK, Color.WHITE};
     		changeColor();
@@ -146,7 +160,7 @@ public class Editor extends Application {
     @Override
     public void start(Stage stage) {
         root = new Group();
-        scene = new Scene(root, STARTING_WINDOW_WIDTH, STARTING_WINDOW_HEIGHT);
+        Scene scene = new Scene(root, STARTING_WINDOW_WIDTH, STARTING_WINDOW_HEIGHT);
 
         // Add blinking cursor to screen 
         root.getChildren().add(cursor);

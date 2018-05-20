@@ -22,13 +22,15 @@ import javafx.util.Duration;
 import javafx.geometry.VPos;
 
 
-// TODO: HOW TO HANDLE ENTERS?
+// TODO: HOW TO HANDLE ENTERS? KEY PRESSED - KeyCode.ENTER
 
 public class Editor extends Application {
     private Group root;
     private Scene scene;
     private TextBuffer buffer; // Fast DLL for storing text
     private Rectangle cursor;
+    private int cursorX;
+    private int cursorY;
 
     private final static int WINDOW_HEIGHT = 500;
     private final static int WINDOW_WIDTH = 500;
@@ -39,22 +41,17 @@ public class Editor extends Application {
 
     /** Constructor for instantiating Cursor, TextBuffer */
     public Editor() {
-            buffer = new TextBuffer();
-            cursor = new Rectangle(STARTING_X, STARTING_Y, 1, FONT_SIZE);
-            cursor.setFill(Color.BLACK); // sets color of rectangle to black
+		buffer = new TextBuffer();
+		cursorX = STARTING_X;
+		cursorY = STARTING_Y;
+		cursor = new Rectangle(cursorX, cursorY, 1, FONT_SIZE);
+		cursor.setFill(Color.BLACK); // sets color of rectangle to black
+
     }
     
 	/** Event Handler for handling keys that get pressed */
 	private class KeyEventHandler implements EventHandler<KeyEvent> {
 		private Text textToDisplay;
-
-		// Constructor creates a text placeholder at top left corner
-		public KeyEventHandler() {
-			textToDisplay = new Text(STARTING_X, STARTING_Y, "");
-			textToDisplay.setTextOrigin(VPos.TOP);
-			textToDisplay.setFont(Font.font(FONT_NAME, FONT_SIZE));
-			root.getChildren().add(textToDisplay);
-		}
 
 		@Override
 		public void handle(KeyEvent keyEvent) {
@@ -62,8 +59,19 @@ public class Editor extends Application {
 			if (keyEvent.getEventType() == keyEvent.KEY_TYPED) {
 				String character = keyEvent.getCharacter();
 				if (character.length() > 0 && character.charAt(0) != 8 && !keyEvent.isShortcutDown()) {
-					textToDisplay.setText(character); // replaces "" with actual character
-					keyEvent.consume(); // marks key event as finished
+					// Create a new text object containing the typed character
+					textToDisplay = new Text(cursorX, cursorY, character);
+					textToDisplay.setTextOrigin(VPos.TOP);
+					textToDisplay.setFont(Font.font(FONT_NAME, FONT_SIZE));
+					buffer.add(textToDisplay); // add text to buffer
+					root.getChildren().add(textToDisplay); // add text to scene graph
+
+					// Update cursor position
+					cursorX += (int) Math.rint(textToDisplay.getLayoutBounds().getWidth());
+					cursor.setX(cursorX);
+
+					// marks key event as finished
+					keyEvent.consume();
 				}
 			} else if (keyEvent.getEventType() == keyEvent.KEY_PRESSED) {
 				KeyCode code = keyEvent.getCode(); // only key pressed key events have an associated code
@@ -109,7 +117,7 @@ public class Editor extends Application {
     	}
     }
 
-    public void makeCursorBlink() {
+    private void makeCursorBlink() {
     	final Timeline timeline = new Timeline();
     	timeline.setCycleCount(Timeline.INDEFINITE);
     	BlinkCursorEventHandler blinkCursor = new BlinkCursorEventHandler(); // instantiate event handler for blinking
@@ -127,7 +135,8 @@ public class Editor extends Application {
         root.getChildren().add(cursor);
         makeCursorBlink();
 
-        // Have key event handler handle keyboard inputs and then output to screen
+		// Once KeyEventHandler object is instantiated, it calls on the handle method
+		// to handle the KeyEvent every time a key is pressed
 		EventHandler<KeyEvent> keyEventHandler = new KeyEventHandler();
 		scene.setOnKeyTyped(keyEventHandler);
 		scene.setOnKeyPressed(keyEventHandler);

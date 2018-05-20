@@ -7,10 +7,10 @@ public class TextBufferTest {
         buffer.add(new Text("hi"));
         buffer.add(new Text("bye"));
         buffer.add(new Text("cya"));
-        buffer.currPrev();
+        buffer.prevCurr();
         buffer.add(new Text("hello"));
         buffer.remove();
-        buffer.currNext();
+        buffer.nextCurr();
         buffer.remove();
     }
 }

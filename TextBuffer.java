@@ -58,12 +58,30 @@ public class TextBuffer {
         }
     }
 
-    public void currNext() {
+    /** Moves curr pointer to next node */
+    public void nextCurr() {
         curr = curr.next;
     }
 
-    public void currPrev() {
+    /** Moves curr pointer to prev node */
+    public void prevCurr() {
         curr = curr.prev;
+    }
+
+    /** Returns the Text object next to curr */
+    public Text nextText() {
+        if (curr.next == sentinel) {
+            return null;
+        }
+        return curr.next.data;
+    }
+
+    /** Returns the Text object prev to curr */
+    public Text prevText() {
+        if (curr.prev == sentinel) {
+            return null;
+        }
+        return curr.prev.data;
     }
 
     public int size() {

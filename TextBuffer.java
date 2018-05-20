@@ -84,6 +84,11 @@ public class TextBuffer {
         return curr.prev.data;
     }
 
+    /** Returns the Text object at current node */
+    public Text currText() {
+        return curr.data;
+    }
+
     public int size() {
         return size;
     }

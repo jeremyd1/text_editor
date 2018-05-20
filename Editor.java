@@ -23,6 +23,7 @@ import javafx.geometry.VPos;
 
 
 // TODO: HOW TO HANDLE ENTERS? KEY PRESSED - KeyCode.ENTER
+// TODO: Height of cursor off?
 
 public class Editor extends Application {
     private Group root;
@@ -31,9 +32,11 @@ public class Editor extends Application {
     private Rectangle cursor;
     private int cursorX;
     private int cursorY;
+    private int windowHeight;
+    private int windowWidth;
 
-    private final static int WINDOW_HEIGHT = 500;
-    private final static int WINDOW_WIDTH = 500;
+    private final static int STARTING_WINDOW_HEIGHT = 500;
+    private final static int STARTING_WINDOW_WIDTH = 500;
     private final static int FONT_SIZE = 12;
     private final static String FONT_NAME = "Verdana";
     private final static int STARTING_X = 5;
@@ -44,9 +47,15 @@ public class Editor extends Application {
 		buffer = new TextBuffer();
 		cursorX = STARTING_X;
 		cursorY = STARTING_Y;
-		cursor = new Rectangle(cursorX, cursorY, 1, FONT_SIZE);
-		cursor.setFill(Color.BLACK); // sets color of rectangle to black
+		windowHeight = STARTING_WINDOW_HEIGHT;
+		windowWidth = STARTING_WINDOW_WIDTH;
 
+		// t is a temporary Text obj used for determining the height of the font so that cursor
+		// height can be set
+		Text t = new Text(0, 0, "");
+		t.setFont(Font.font(FONT_NAME, FONT_SIZE));
+		cursor = new Rectangle(cursorX, cursorY, 1, t.getLayoutBounds().getHeight());
+		cursor.setFill(Color.BLACK); // sets color of rectangle to black
     }
     
 	/** Event Handler for handling keys that get pressed */
@@ -63,8 +72,10 @@ public class Editor extends Application {
 					textToDisplay = new Text(cursorX, cursorY, character);
 					textToDisplay.setTextOrigin(VPos.TOP);
 					textToDisplay.setFont(Font.font(FONT_NAME, FONT_SIZE));
-					buffer.add(textToDisplay); // add text to buffer
-					root.getChildren().add(textToDisplay); // add text to scene graph
+
+					// Add Text to buffer and scene graph
+					buffer.add(textToDisplay);
+					root.getChildren().add(textToDisplay);
 
 					// Update cursor position
 					cursorX += (int) Math.rint(textToDisplay.getLayoutBounds().getWidth());
@@ -87,9 +98,15 @@ public class Editor extends Application {
 				} else if (code == KeyCode.RIGHT) {
 					// DO SOMETHING
 				} else if (code == KeyCode.BACK_SPACE) {
+					Text remove = buffer.currText();
+					if (remove != null) {
+						root.getChildren().remove(buffer.currText()); // remove from graph
+						buffer.remove(); // remove from buffer;
+						cursorX -= (int) Math.rint(remove.getLayoutBounds().getWidth());
+						cursor.setX(cursorX);
+					}
+				} else if (code == KeyCode.ENTER) {
 					// DO SOMETHING
-				} else {
-
 				}
 			}
 		}
@@ -129,7 +146,7 @@ public class Editor extends Application {
     @Override
     public void start(Stage stage) {
         root = new Group();
-        scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        scene = new Scene(root, STARTING_WINDOW_WIDTH, STARTING_WINDOW_HEIGHT);
 
         // Add blinking cursor to screen 
         root.getChildren().add(cursor);

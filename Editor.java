@@ -77,21 +77,7 @@ public class Editor extends Application {
 					buffer.add(textToDisplay);
 					root.getChildren().add(textToDisplay);
 
-					// Update Text and cursor position
-					int prevX = cursorX;
-					cursorX += (int) Math.rint(textToDisplay.getLayoutBounds().getWidth());
-					if (cursorX > windowWidth) { // move cursor to new line and display Text there
-						newline();
-						textToDisplay.setX(cursorX);
-						textToDisplay.setY(cursorY);
-						cursorX += textToDisplay.getLayoutBounds().getWidth();
-						cursor.setX(cursorX);
-					} else { // display Text normally and move cursor normally
-						textToDisplay.setX(prevX);
-						textToDisplay.setY(cursorY);
-						cursor.setX(cursorX);
-					}
-					cursor.setY(cursorY);
+					placeTextInCorrectPosAndUpdateCursor(textToDisplay);
 
 					// marks key event as finished
 					keyEvent.consume();
@@ -106,7 +92,13 @@ public class Editor extends Application {
 				} else if (code == KeyCode.DOWN) {
 					// DO SOMETHING
 				} else if (code == KeyCode.LEFT) {
-					// DO SOMETHING
+					Text text = buffer.currText();
+					if (text != null) {
+						cursorX = (int) Math.rint(buffer.currText().getX());
+						cursorY = (int) Math.rint(buffer.currText().getY());
+						buffer.prevCurr();
+						setCursor(cursorX, cursorY);
+					}
 				} else if (code == KeyCode.RIGHT) {
 					// DO SOMETHING
 				} else if (code == KeyCode.BACK_SPACE) {
@@ -115,12 +107,27 @@ public class Editor extends Application {
 						root.getChildren().remove(buffer.currText()); // remove from graph
 						buffer.remove(); // remove from buffer;
 						cursorX -= (int) Math.rint(remove.getLayoutBounds().getWidth());
-						cursor.setX(cursorX);
+						setCursor(cursorX, cursorY);
 					}
 				} else if (code == KeyCode.ENTER) {
+					// TODO: RETHINK ABOUT ENTER KEY REPRESENTATION - NEED TO BE ABLE TO MOVE TO EMPTY LINES AFTER PRESSING ENTER
 					newline();
-					cursor.setX(cursorX);
-					cursor.setY(cursorY);
+					setCursor(cursorX, cursorY);
+
+					// TODO: ENTERS DON'T PROPAGATE IF A NEW LINE IS MADE! 
+					int newX = cursorX;
+					int newY = cursorY;
+					while (buffer.hasNextTrav()) {
+						Text textToBeMoved = buffer.nextTrav();
+						textToBeMoved.setX(newX);
+						textToBeMoved.setY(newY);
+						if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth) {
+							newX = STARTING_X;
+							newY += textHeight;
+						} else {
+							newX += textToBeMoved.getLayoutBounds().getWidth();
+						}
+					}
 				}
 			}
 		}
@@ -129,6 +136,26 @@ public class Editor extends Application {
 	private void newline() {
 		cursorX = STARTING_X;
 		cursorY += textHeight;
+	}
+
+	private void placeTextInCorrectPosAndUpdateCursor(Text text) {
+		int prevX = cursorX;
+		cursorX += (int) Math.rint(text.getLayoutBounds().getWidth());
+		if (cursorX > windowWidth) { // move cursor to new line and display Text there
+			newline();
+			text.setX(cursorX);
+			text.setY(cursorY);
+			cursorX += text.getLayoutBounds().getWidth();
+		} else { // display Text normally and move cursor normally
+			text.setX(prevX);
+			text.setY(cursorY);
+		}
+		setCursor(cursorX, cursorY);
+	}
+
+	private void setCursor(int x, int y) {
+		cursor.setX(x);
+		cursor.setY(y);
 	}
 
     /** Event Handler for handling blinking cursor */

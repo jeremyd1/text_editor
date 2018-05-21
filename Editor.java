@@ -81,8 +81,7 @@ public class Editor extends Application {
 					int prevX = cursorX;
 					cursorX += (int) Math.rint(textToDisplay.getLayoutBounds().getWidth());
 					if (cursorX > windowWidth) { // move cursor to new line and display Text there
-						cursorX = STARTING_X;
-						cursorY += textHeight;
+						newline();
 						textToDisplay.setX(cursorX);
 						textToDisplay.setY(cursorY);
 						cursorX += textToDisplay.getLayoutBounds().getWidth();
@@ -93,7 +92,6 @@ public class Editor extends Application {
 						cursor.setX(cursorX);
 					}
 					cursor.setY(cursorY);
-
 
 					// marks key event as finished
 					keyEvent.consume();
@@ -120,10 +118,17 @@ public class Editor extends Application {
 						cursor.setX(cursorX);
 					}
 				} else if (code == KeyCode.ENTER) {
-					// DO SOMETHING
+					newline();
+					cursor.setX(cursorX);
+					cursor.setY(cursorY);
 				}
 			}
 		}
+	}
+
+	private void newline() {
+		cursorX = STARTING_X;
+		cursorY += textHeight;
 	}
 
     /** Event Handler for handling blinking cursor */
@@ -181,3 +186,8 @@ public class Editor extends Application {
         launch(args);
     }
 }
+
+
+
+
+

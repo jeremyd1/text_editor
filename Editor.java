@@ -4,6 +4,7 @@
  * Project: Text Editor
  */
 
+import com.sun.xml.internal.ws.api.ha.HaInfo;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -24,9 +25,25 @@ import javafx.geometry.VPos;
 
 // TODO: HOW TO HANDLE ENTERS? KEY PRESSED - KeyCode.ENTER
 
+/**
+ * Core DS:
+ * 	TextBuffer - Fast DLL for storing Text objects displayed in Editor
+ * 		curr: pointer to current node that cursor was adj to
+ * 		traverser: pointer to current node that can be used to traverse TextBuffer
+ * 	Scene Graph - Tree for rendering Text in TextBuffer
+ * 		root: Group Node for displaying all Text
+ * 		children: cursor node + text nodes
+ *
+ * 	Rendering (linear time)
+ * 		Recalculated position of all Text objects after the cursor whenever a special key
+ * 		such as enter or backspace was pressed
+ * 		Used TextBuffer to traverse through all Text nodes that needed to be repositioned
+ *
+ */
+
 public class Editor extends Application {
     private Group root;
-    private TextBuffer buffer; // Fast DLL for storing text
+    private TextBuffer buffer;
     private Rectangle cursor;
     private int cursorX;
     private int cursorY;
@@ -77,13 +94,26 @@ public class Editor extends Application {
 					buffer.add(textToDisplay);
 					root.getChildren().add(textToDisplay);
 
-					placeTextInCorrectPosAndUpdateCursor(textToDisplay);
+					int prevX = cursorX;
+					updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
+					if (cursorX > windowWidth - 5) { // move cursor to new line and display Text there
+						newline();
+						textToDisplay.setX(cursorX);
+						textToDisplay.setY(cursorY);
+						updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
+					} else { // display Text normally and move cursor normally
+						textToDisplay.setX(prevX);
+						textToDisplay.setY(cursorY);
+					}
+					setCursor(cursorX, cursorY);
+					reformat();
 
 					// marks key event as finished
 					keyEvent.consume();
 				}
 			} else if (keyEvent.getEventType() == keyEvent.KEY_PRESSED) {
 				KeyCode code = keyEvent.getCode(); // only key pressed key events have an associated code
+				Text text = buffer.currText();
 
 				// Need to handle arrows, backspace, shortcut keys (command)
 				// Shortcut: + or =, -, s
@@ -92,42 +122,45 @@ public class Editor extends Application {
 				} else if (code == KeyCode.DOWN) {
 					// DO SOMETHING
 				} else if (code == KeyCode.LEFT) {
-					Text text = buffer.currText();
 					if (text != null) {
-						cursorX = (int) Math.rint(buffer.currText().getX());
-						cursorY = (int) Math.rint(buffer.currText().getY());
+						updateCursor(text.getX(), text.getY());
 						buffer.prevCurr();
 						setCursor(cursorX, cursorY);
 					}
 				} else if (code == KeyCode.RIGHT) {
-					// DO SOMETHING
-				} else if (code == KeyCode.BACK_SPACE) {
-					Text remove = buffer.currText();
-					if (remove != null) {
-						root.getChildren().remove(buffer.currText()); // remove from graph
-						buffer.remove(); // remove from buffer;
-						cursorX -= (int) Math.rint(remove.getLayoutBounds().getWidth());
-						setCursor(cursorX, cursorY);
+					if (buffer.hasNextTrav()) {
+						buffer.nextTrav();
+						if (buffer.hasNextTrav()) {
+							updateCursor(buffer.nextTrav().getX(), buffer.nextTrav().getY());
+							buffer.nextCurr();
+							setCursor(cursorX, cursorY);
+						} else {
+
+						}
+
+						buffer.resetTrav();
 					}
+				} else if (code == KeyCode.BACK_SPACE) {
+					if (text != null) {
+						root.getChildren().remove(text); // remove from graph
+						buffer.remove(); // remove from buffer;
+						text = buffer.currText();
+						if (text != null) {
+							updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
+							setCursor(cursorX, cursorY);
+						} else {
+							updateCursor(STARTING_X, STARTING_Y);
+							setCursor(cursorX, cursorY);
+						}
+					}
+					reformat();
 				} else if (code == KeyCode.ENTER) {
 					// TODO: RETHINK ABOUT ENTER KEY REPRESENTATION - NEED TO BE ABLE TO MOVE TO EMPTY LINES AFTER PRESSING ENTER
 					newline();
 					setCursor(cursorX, cursorY);
 
-					// TODO: ENTERS DON'T PROPAGATE IF A NEW LINE IS MADE! 
-					int newX = cursorX;
-					int newY = cursorY;
-					while (buffer.hasNextTrav()) {
-						Text textToBeMoved = buffer.nextTrav();
-						textToBeMoved.setX(newX);
-						textToBeMoved.setY(newY);
-						if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth) {
-							newX = STARTING_X;
-							newY += textHeight;
-						} else {
-							newX += textToBeMoved.getLayoutBounds().getWidth();
-						}
-					}
+					// TODO: ENTERS DON'T PROPAGATE IF A NEW LINE IS MADE!
+					reformat();
 				}
 			}
 		}
@@ -138,24 +171,34 @@ public class Editor extends Application {
 		cursorY += textHeight;
 	}
 
-	private void placeTextInCorrectPosAndUpdateCursor(Text text) {
-		int prevX = cursorX;
-		cursorX += (int) Math.rint(text.getLayoutBounds().getWidth());
-		if (cursorX > windowWidth) { // move cursor to new line and display Text there
-			newline();
-			text.setX(cursorX);
-			text.setY(cursorY);
-			cursorX += text.getLayoutBounds().getWidth();
-		} else { // display Text normally and move cursor normally
-			text.setX(prevX);
-			text.setY(cursorY);
-		}
-		setCursor(cursorX, cursorY);
+	private void updateCursor(double x, double y) {
+		cursorX = (int) Math.rint(x);
+		cursorY = (int) Math.rint(y);
 	}
 
 	private void setCursor(int x, int y) {
 		cursor.setX(x);
 		cursor.setY(y);
+	}
+
+	/**
+	 * Reformats all of the Text after the cursor
+	 * Assumes that cursor is in correct position
+	 */
+	private void reformat() {
+		int newX = cursorX;
+		int newY = cursorY;
+		while (buffer.hasNextTrav()) {
+			Text textToBeMoved = buffer.nextTrav();
+			if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - 5) {
+				newX = STARTING_X;
+				newY += textHeight;
+			}
+			textToBeMoved.setX(newX);
+			textToBeMoved.setY(newY);
+			newX += (int) Math.rint(textToBeMoved.getLayoutBounds().getWidth());
+		}
+		buffer.resetTrav(); // reset traversal pointer
 	}
 
     /** Event Handler for handling blinking cursor */
@@ -213,7 +256,6 @@ public class Editor extends Application {
         launch(args);
     }
 }
-
 
 
 

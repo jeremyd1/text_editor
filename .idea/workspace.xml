@@ -15,15 +15,15 @@
       <file leaf-file-name="Editor.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Editor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
-              <caret line="116" column="75" selection-start-line="116" selection-start-column="75" selection-end-line="116" selection-end-column="75" />
+            <state relative-caret-position="134">
+              <caret line="41" column="3" lean-forward="true" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="imports" expanded="true" />
                 <element signature="e#2772#2773#0" expanded="true" />
                 <element signature="e#2800#2801#0" expanded="true" />
-                <element signature="e#2550#2551#0" expanded="true" />
-                <element signature="e#2578#2579#0" expanded="true" />
+                <element signature="e#8301#8302#0" expanded="true" />
+                <element signature="e#8329#8330#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -78,6 +78,9 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>cursor.set</find>
+      <find>.setX</find>
+      <find>cursorX</find>
+      <find>windowWidth</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -95,10 +98,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="960" />
+    <option name="x" value="479" />
     <option name="y" value="23" />
     <option name="width" value="960" />
-    <option name="height" value="1053" />
+    <option name="height" value="873" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -243,7 +246,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="960" y="23" width="960" height="1053" extended-state="0" />
+    <frame x="479" y="23" width="960" height="873" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
@@ -254,7 +257,7 @@
       <window_info anchor="right" id="Capture Analysis" order="3" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="right" id="Maven Projects" order="3" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32740587" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.29639176" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Style Checker" order="7" />
       <window_info anchor="bottom" id="Terminal" order="7" />
@@ -283,7 +286,7 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="12" />
+      <option name="time" value="13" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -296,8 +299,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#2772#2773#0" expanded="true" />
             <element signature="e#2800#2801#0" expanded="true" />
-            <element signature="e#2550#2551#0" expanded="true" />
-            <element signature="e#2578#2579#0" expanded="true" />
+            <element signature="e#8301#8302#0" expanded="true" />
+            <element signature="e#8329#8330#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -335,8 +338,8 @@
             <element signature="imports" expanded="true" />
             <element signature="e#2772#2773#0" expanded="true" />
             <element signature="e#2800#2801#0" expanded="true" />
-            <element signature="e#2550#2551#0" expanded="true" />
-            <element signature="e#2578#2579#0" expanded="true" />
+            <element signature="e#8301#8302#0" expanded="true" />
+            <element signature="e#8329#8330#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -407,15 +410,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Editor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="116" column="75" selection-start-line="116" selection-start-column="75" selection-end-line="116" selection-end-column="75" />
+        <state relative-caret-position="134">
+          <caret line="41" column="3" lean-forward="true" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
             <element signature="e#2772#2773#0" expanded="true" />
             <element signature="e#2800#2801#0" expanded="true" />
-            <element signature="e#2550#2551#0" expanded="true" />
-            <element signature="e#2578#2579#0" expanded="true" />
+            <element signature="e#8301#8302#0" expanded="true" />
+            <element signature="e#8329#8330#0" expanded="true" />
           </folding>
         </state>
       </provider>

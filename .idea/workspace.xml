@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6642945e-041b-442d-b729-a51627da34cd" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/BlinkCursor.java" afterPath="$PROJECT_DIR$/BlinkCursorHandler.java" />
-      <change beforePath="$PROJECT_DIR$/Editor.java" afterPath="$PROJECT_DIR$/Editor.java" />
-      <change beforePath="$PROJECT_DIR$/out/production/text_editor/BlinkCursor.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/text_editor/Editor$KeyEventHandler.class" afterPath="$PROJECT_DIR$/out/production/text_editor/Editor$KeyEventHandler.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/text_editor/Editor.class" afterPath="$PROJECT_DIR$/out/production/text_editor/Editor.class" />
-    </list>
+    <list default="true" id="6642945e-041b-442d-b729-a51627da34cd" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -22,8 +15,8 @@
       <file leaf-file-name="Editor.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Editor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="141" column="42" lean-forward="false" selection-start-line="141" selection-start-column="42" selection-end-line="141" selection-end-column="42" />
+            <state relative-caret-position="326">
+              <caret line="139" column="46" lean-forward="true" selection-start-line="139" selection-start-column="46" selection-end-line="139" selection-end-column="46" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="imports" expanded="true" />
@@ -599,8 +592,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Editor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="141" column="42" lean-forward="false" selection-start-line="141" selection-start-column="42" selection-end-line="141" selection-end-column="42" />
+        <state relative-caret-position="326">
+          <caret line="139" column="46" lean-forward="true" selection-start-line="139" selection-start-column="46" selection-end-line="139" selection-end-column="46" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />

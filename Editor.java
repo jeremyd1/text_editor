@@ -4,7 +4,6 @@
  * Project: Text Editor
  */
 
-import com.sun.xml.internal.ws.api.ha.HaInfo;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -50,6 +49,7 @@ public class Editor extends Application {
     private int windowHeight;
     private int windowWidth;
     private double textHeight;
+    private boolean enterSeen;
 
     private final static int STARTING_WINDOW_HEIGHT = 500;
     private final static int STARTING_WINDOW_WIDTH = 500;
@@ -65,6 +65,7 @@ public class Editor extends Application {
 		cursorY = STARTING_Y;
 		windowHeight = STARTING_WINDOW_HEIGHT;
 		windowWidth = STARTING_WINDOW_WIDTH;
+		enterSeen = false;
 
 		// t is a temporary Text obj used for determining the height of the font so that
 		// cursor height can be set
@@ -96,7 +97,7 @@ public class Editor extends Application {
 
 					int prevX = cursorX;
 					updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
-					if (cursorX > windowWidth - 5) { // move cursor to new line and display Text there
+					if (cursorX > windowWidth - 5) { // if at end of line, move cursor to new line and display Text there
 						newline();
 						textToDisplay.setX(cursorX);
 						textToDisplay.setY(cursorY);
@@ -123,45 +124,61 @@ public class Editor extends Application {
 					// DO SOMETHING
 				} else if (code == KeyCode.LEFT) {
 					if (text != null) {
-						updateCursor(text.getX(), text.getY());
-						buffer.prevCurr();
+						// If cursor is at beginning of new line, move to end of line above without changing buffer
+						if ((int) Math.rint(text.getY()) != cursorY) {
+							updateCursor(text.getX() + text.getLayoutBounds().getWidth(),
+									text.getY());
+						} else {
+							updateCursor(text.getX(), text.getY());
+							buffer.prevCurr();
+						}
 						setCursor(cursorX, cursorY);
+
+						// If enter "\r" is seen, call handle again to skip over it
+						if (text.getText().equals("\r") && !enterSeen) {
+							enterSeen = true;
+							this.handle(keyEvent);
+						}
 					}
 				} else if (code == KeyCode.RIGHT) {
-					if (buffer.hasNextTrav()) {
-						buffer.nextTrav();
-						if (buffer.hasNextTrav()) {
-							updateCursor(buffer.nextTrav().getX(), buffer.nextTrav().getY());
-							buffer.nextCurr();
-							setCursor(cursorX, cursorY);
+					Text nextText = buffer.nextText();
+					if (nextText != null) {
+						// If cursor is at end of line, move to beginning of new line without changing buffer
+						if ((int) Math.rint(nextText.getY()) != cursorY) {
+							updateCursor(nextText.getX(), nextText.getY());
 						} else {
-
+							updateCursor(cursorX + nextText.getLayoutBounds().getWidth(), cursorY);
+							buffer.nextCurr();
 						}
+						setCursor(cursorX, cursorY);
 
-						buffer.resetTrav();
+						// If enter "\r" is seen, call handle again to skip over it
+						if (nextText.getText().equals("\r") && !enterSeen) {
+							enterSeen = true;
+							this.handle(keyEvent);
+						}
 					}
 				} else if (code == KeyCode.BACK_SPACE) {
 					if (text != null) {
 						root.getChildren().remove(text); // remove from graph
 						buffer.remove(); // remove from buffer;
-						text = buffer.currText();
+						text = buffer.currText(); // removing from buffer will cause text to be assigned to a new Text Node
 						if (text != null) {
 							updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
-							setCursor(cursorX, cursorY);
 						} else {
 							updateCursor(STARTING_X, STARTING_Y);
-							setCursor(cursorX, cursorY);
 						}
+						setCursor(cursorX, cursorY);
 					}
 					reformat();
 				} else if (code == KeyCode.ENTER) {
-					// TODO: RETHINK ABOUT ENTER KEY REPRESENTATION - NEED TO BE ABLE TO MOVE TO EMPTY LINES AFTER PRESSING ENTER
 					newline();
 					setCursor(cursorX, cursorY);
 
 					// TODO: ENTERS DON'T PROPAGATE IF A NEW LINE IS MADE!
 					reformat();
 				}
+				enterSeen = false;
 			}
 		}
 	}

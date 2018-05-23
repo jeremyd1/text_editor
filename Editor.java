@@ -51,6 +51,7 @@ public class Editor extends Application {
     private int windowWidth;
     private double textHeight;
     private boolean enterSeen;
+    private int lowerBoundY;
 
     private final static int STARTING_WINDOW_HEIGHT = 500;
     private final static int STARTING_WINDOW_WIDTH = 500;
@@ -64,6 +65,7 @@ public class Editor extends Application {
 		buffer = new TextBuffer();
 		cursorX = STARTING_X;
 		cursorY = STARTING_Y;
+		lowerBoundY = STARTING_Y;
 		windowHeight = STARTING_WINDOW_HEIGHT;
 		windowWidth = STARTING_WINDOW_WIDTH;
 		enterSeen = false;
@@ -76,7 +78,7 @@ public class Editor extends Application {
 		cursor = new Rectangle(cursorX, cursorY, 1, textHeight);
 		cursor.setFill(Color.BLACK); // sets color of rectangle to black
     }
-    
+
 	/** Event Handler for handling keys that get pressed */
 	private class KeyEventHandler implements EventHandler<KeyEvent> {
 		private Text textToDisplay;
@@ -117,7 +119,7 @@ public class Editor extends Application {
 				KeyCode code = keyEvent.getCode(); // only key pressed key events have an associated code
 				Text text = buffer.currText();
 
-				// Need to handle arrows, backspace, shortcut keys (command), enter
+				// Need to handle arrows, backspace, shortcut keys (command), and enter
 				// Shortcut: + or =, -, s
 				if (code == KeyCode.UP) {
 					if (cursorY != STARTING_Y) {
@@ -127,20 +129,26 @@ public class Editor extends Application {
 						while (buffer.currText().getX() > cursorX) {
 							buffer.prevCurr();
 						}
-						text = buffer.currText();
 
-						// Update cursor to either be on left or right side of above character
+						// Update cursor to either be on left or right side of character ABOVE
 						// depending on which side is closer to cursorX
-						if (Math.abs(text.getX() - cursorX) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - cursorX)) {
-							updateCursor(text.getX(), text.getY());
-							buffer.prevCurr();
-						} else {
-							updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
-						}
-						setCursor(cursorX, cursorY);
+						setCursorInBestPos();
 					}
 				} else if (code == KeyCode.DOWN) {
+					if (lowerBoundY > cursorY) {
+						while (buffer.nextText().getY() < cursorY + Math.floor(textHeight)) {
+							buffer.nextCurr();
+						}
+						buffer.nextCurr();
+                        while (buffer.nextText() != null &&  buffer.nextText().getX() < cursorX
+                                && buffer.nextText().getY() <= cursorY + Math.floor(textHeight)) {
+                            buffer.nextCurr();
+                        }
 
+                        // Update cursor to either be on left or right side of character BELOW
+                        // depending on which side is closer to cursorX
+                        setCursorInBestPos();
+					}
 				} else if (code == KeyCode.LEFT) {
 					if (text != null) {
 						// If cursor is at beginning of new line, move to end of line above without changing buffer
@@ -153,10 +161,7 @@ public class Editor extends Application {
 						setCursor(cursorX, cursorY);
 
 						// If enter "\r" is seen, call handle again to skip over it
-						if (text.getText().equals("\r") && !enterSeen) {
-							enterSeen = true;
-							this.handle(keyEvent);
-						}
+						skipOverEnter(text, keyEvent);
 					}
 				} else if (code == KeyCode.RIGHT) {
 					Text nextText = buffer.nextText();
@@ -171,10 +176,7 @@ public class Editor extends Application {
 						setCursor(cursorX, cursorY);
 
 						// If enter "\r" is seen, call handle again to skip over it
-						if (nextText.getText().equals("\r") && !enterSeen) {
-							enterSeen = true;
-							this.handle(keyEvent);
-						}
+                        skipOverEnter(nextText, keyEvent);
 					}
 				} else if (code == KeyCode.BACK_SPACE) {
 					if (text != null) {
@@ -197,52 +199,77 @@ public class Editor extends Application {
 				enterSeen = false;
 			}
 		}
-	}
 
-	private void newline() {
-		cursorX = STARTING_X;
-		cursorY += textHeight;
-	}
-
-	private void updateCursor(double x, double y) {
-		cursorX = round(x);
-		cursorY = round(y);
-	}
-
-	private void setCursor(int x, int y) {
-		cursor.setX(x);
-		cursor.setY(y);
-	}
-
-	private int round(double x) {
-		return (int) Math.rint(x);
-	}
-
-	/**
-	 * Reformats all of the Text after the cursor
-	 * Assumes that cursor is in correct position
-	 */
-	private void reformat() {
-		int newX = cursorX;
-		int newY = cursorY;
-		while (buffer.hasNextTrav()) {
-			Text textToBeMoved = buffer.nextTrav();
-			if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - 5
-					|| textToBeMoved.getText().equals("\r")) {
-				newX = STARTING_X;
-				newY += textHeight;
-			}
-			textToBeMoved.setX(newX);
-			textToBeMoved.setY(round(newY));
-			newX += round(textToBeMoved.getLayoutBounds().getWidth());
+		private void newline() {
+			cursorX = STARTING_X;
+			cursorY += textHeight;
 		}
-		buffer.resetTrav(); // reset traversal pointer
+
+		private void updateCursor(double x, double y) {
+			cursorX = round(x);
+			cursorY = round(y);
+		}
+
+		private void setCursor(int x, int y) {
+			cursor.setX(x);
+			cursor.setY(y);
+		}
+
+		private int round(double x) {
+			return (int) Math.rint(x);
+		}
+
+		/**
+		 * Reformats all of the Text after the cursor
+		 * Assumes that cursor is in correct position
+		 */
+		private void reformat() {
+			int newX = cursorX;
+			int newY = cursorY;
+			while (buffer.hasNextTrav()) {
+				Text textToBeMoved = buffer.nextTrav();
+				if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - 5
+						|| textToBeMoved.getText().equals("\r")) {
+					newX = STARTING_X;
+					newY += textHeight;
+				}
+				textToBeMoved.setX(newX);
+				textToBeMoved.setY(round(newY));
+				newX += round(textToBeMoved.getLayoutBounds().getWidth());
+			}
+
+			Text text = buffer.currText();
+			if (text != null && text.getY() > lowerBoundY) {
+				lowerBoundY = round(buffer.currText().getY());
+			}
+
+			buffer.resetTrav(); // reset traversal pointer
+		}
+
+		private void skipOverEnter(Text text, KeyEvent keyEvent) {
+            if (text.getText().equals("\r") && !enterSeen) {
+                enterSeen = true;
+                this.handle(keyEvent);
+            }
+        }
+
+		private void setCursorInBestPos() {
+            Text text = buffer.currText();
+            if (Math.abs(text.getX() - cursorX) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - cursorX)) {
+                updateCursor(text.getX(), text.getY());
+                buffer.prevCurr();
+            } else {
+                updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
+            }
+            setCursor(cursorX, cursorY);
+        }
 	}
+
 
     private void makeCursorBlink() {
     	final Timeline timeline = new Timeline();
     	timeline.setCycleCount(Timeline.INDEFINITE);
-    	BlinkCursor blinkCursor = new BlinkCursor(cursor); // instantiate event handler for blinking
+    	BlinkCursorHandler blinkCursor = new BlinkCursorHandler(cursor); // instantiate event handler for blinking
     	KeyFrame keyFrame = new KeyFrame(Duration.seconds(0.8), blinkCursor); // create blinking key frame
     	timeline.getKeyFrames().add(keyFrame); // add blinking key frame to timeline
     	timeline.play();

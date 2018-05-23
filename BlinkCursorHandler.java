@@ -4,12 +4,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 /** Event Handler for handling blinking cursor */
-public class BlinkCursor implements EventHandler<ActionEvent> {
+public class BlinkCursorHandler implements EventHandler<ActionEvent> {
     private int currentColorIndex;
     private Color[] boxColors;
     private Rectangle cursor;
 
-    public BlinkCursor(Rectangle r) {
+    public BlinkCursorHandler(Rectangle r) {
         cursor = r;
         currentColorIndex = 0;
         boxColors =  new Color[] {Color.BLACK, Color.WHITE};

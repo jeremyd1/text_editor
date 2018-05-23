@@ -15,7 +15,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.KeyCode;
-import javafx.event.ActionEvent;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
@@ -31,12 +30,16 @@ import javafx.geometry.VPos;
  * 		root: Group Node for displaying all Text
  * 		children: cursor node + text nodes
  *
- * 	Rendering (linear time)
- * 		Recalculated position of all Text objects after the cursor whenever a special key
- * 		such as enter or backspace was pressed
- * 		Used TextBuffer to traverse through all Text nodes that needed to be repositioned
+ * Rendering (linear time)
+ * 	Recalculated position of all Text objects after the cursor whenever a special key
+ * 	such as enter or backspace was pressed
+ * 	Used TextBuffer to traverse through all Text nodes that needed to be repositioned
  *
  */
+
+// TODO: FIX UP COMMAND
+// TODO: IMPLEMENT DOWN COMMAND
+
 
 public class Editor extends Application {
     private Group root;
@@ -117,19 +120,27 @@ public class Editor extends Application {
 				// Need to handle arrows, backspace, shortcut keys (command), enter
 				// Shortcut: + or =, -, s
 				if (code == KeyCode.UP) {
-					// TODO: FIX UP COMMAND 
 					if (cursorY != STARTING_Y) {
 						while (buffer.currText().getY() > cursorY - Math.floor(textHeight)) {
 							buffer.prevCurr();
 						}
-						while (buffer.prevText().getX() > cursorX) {
+						while (buffer.currText().getX() > cursorX) {
 							buffer.prevCurr();
 						}
-						updateCursor(buffer.currText().getX(), buffer.currText().getY());
+						text = buffer.currText();
+
+						// Update cursor to either be on left or right side of above character
+						// depending on which side is closer to cursorX
+						if (Math.abs(text.getX() - cursorX) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - cursorX)) {
+							updateCursor(text.getX(), text.getY());
+							buffer.prevCurr();
+						} else {
+							updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
+						}
 						setCursor(cursorX, cursorY);
 					}
 				} else if (code == KeyCode.DOWN) {
-					// DO SOMETHING
+
 				} else if (code == KeyCode.LEFT) {
 					if (text != null) {
 						// If cursor is at beginning of new line, move to end of line above without changing buffer
@@ -181,8 +192,6 @@ public class Editor extends Application {
 				} else if (code == KeyCode.ENTER) {
 					newline();
 					setCursor(cursorX, cursorY);
-
-					// TODO: ENTERS DON'T PROPAGATE IF A NEW LINE IS MADE!
 					reformat();
 				}
 				enterSeen = false;
@@ -218,43 +227,22 @@ public class Editor extends Application {
 		int newY = cursorY;
 		while (buffer.hasNextTrav()) {
 			Text textToBeMoved = buffer.nextTrav();
-			if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - 5) {
+			if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - 5
+					|| textToBeMoved.getText().equals("\r")) {
 				newX = STARTING_X;
 				newY += textHeight;
 			}
 			textToBeMoved.setX(newX);
-			textToBeMoved.setY(newY);
+			textToBeMoved.setY(round(newY));
 			newX += round(textToBeMoved.getLayoutBounds().getWidth());
 		}
 		buffer.resetTrav(); // reset traversal pointer
 	}
 
-    /** Event Handler for handling blinking cursor */
-    private class BlinkCursorEventHandler implements EventHandler<ActionEvent> {
-    	private int currentColorIndex;
-    	private Color[] boxColors;
-
-    	private BlinkCursorEventHandler() {
-    		currentColorIndex = 0;
-    		boxColors =  new Color[] {Color.BLACK, Color.WHITE};
-    		changeColor();
-    	}
-
-    	private void changeColor() {
-    		cursor.setFill(boxColors[currentColorIndex]);
-    		currentColorIndex = (currentColorIndex + 1) % boxColors.length;
-    	}
-
-    	@Override
-    	public void handle(ActionEvent event) {
-    		changeColor();
-    	}
-    }
-
     private void makeCursorBlink() {
     	final Timeline timeline = new Timeline();
     	timeline.setCycleCount(Timeline.INDEFINITE);
-    	BlinkCursorEventHandler blinkCursor = new BlinkCursorEventHandler(); // instantiate event handler for blinking
+    	BlinkCursor blinkCursor = new BlinkCursor(cursor); // instantiate event handler for blinking
     	KeyFrame keyFrame = new KeyFrame(Duration.seconds(0.8), blinkCursor); // create blinking key frame
     	timeline.getKeyFrames().add(keyFrame); // add blinking key frame to timeline
     	timeline.play();
@@ -270,7 +258,7 @@ public class Editor extends Application {
         makeCursorBlink();
 
 		// Once KeyEventHandler object is instantiated, it calls on the handle method
-		// to handle the KeyEvent every time a key is pressed
+		// to handle the KeyEvent every time a key is pressed/typed
 		EventHandler<KeyEvent> keyEventHandler = new KeyEventHandler();
 		scene.setOnKeyTyped(keyEventHandler);
 		scene.setOnKeyPressed(keyEventHandler);

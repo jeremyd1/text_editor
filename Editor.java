@@ -22,8 +22,6 @@ import javafx.util.Duration;
 import javafx.geometry.VPos;
 
 
-// TODO: HOW TO HANDLE ENTERS? KEY PRESSED - KeyCode.ENTER
-
 /**
  * Core DS:
  * 	TextBuffer - Fast DLL for storing Text objects displayed in Editor
@@ -116,18 +114,27 @@ public class Editor extends Application {
 				KeyCode code = keyEvent.getCode(); // only key pressed key events have an associated code
 				Text text = buffer.currText();
 
-				// Need to handle arrows, backspace, shortcut keys (command)
+				// Need to handle arrows, backspace, shortcut keys (command), enter
 				// Shortcut: + or =, -, s
 				if (code == KeyCode.UP) {
-					// DO SOMETHING
+					// TODO: FIX UP COMMAND 
+					if (cursorY != STARTING_Y) {
+						while (buffer.currText().getY() > cursorY - Math.floor(textHeight)) {
+							buffer.prevCurr();
+						}
+						while (buffer.prevText().getX() > cursorX) {
+							buffer.prevCurr();
+						}
+						updateCursor(buffer.currText().getX(), buffer.currText().getY());
+						setCursor(cursorX, cursorY);
+					}
 				} else if (code == KeyCode.DOWN) {
 					// DO SOMETHING
 				} else if (code == KeyCode.LEFT) {
 					if (text != null) {
 						// If cursor is at beginning of new line, move to end of line above without changing buffer
-						if ((int) Math.rint(text.getY()) != cursorY) {
-							updateCursor(text.getX() + text.getLayoutBounds().getWidth(),
-									text.getY());
+						if (round(text.getY()) != cursorY) {
+							updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
 						} else {
 							updateCursor(text.getX(), text.getY());
 							buffer.prevCurr();
@@ -144,7 +151,7 @@ public class Editor extends Application {
 					Text nextText = buffer.nextText();
 					if (nextText != null) {
 						// If cursor is at end of line, move to beginning of new line without changing buffer
-						if ((int) Math.rint(nextText.getY()) != cursorY) {
+						if (round(nextText.getY()) != cursorY) {
 							updateCursor(nextText.getX(), nextText.getY());
 						} else {
 							updateCursor(cursorX + nextText.getLayoutBounds().getWidth(), cursorY);
@@ -189,13 +196,17 @@ public class Editor extends Application {
 	}
 
 	private void updateCursor(double x, double y) {
-		cursorX = (int) Math.rint(x);
-		cursorY = (int) Math.rint(y);
+		cursorX = round(x);
+		cursorY = round(y);
 	}
 
 	private void setCursor(int x, int y) {
 		cursor.setX(x);
 		cursor.setY(y);
+	}
+
+	private int round(double x) {
+		return (int) Math.rint(x);
 	}
 
 	/**
@@ -213,7 +224,7 @@ public class Editor extends Application {
 			}
 			textToBeMoved.setX(newX);
 			textToBeMoved.setY(newY);
-			newX += (int) Math.rint(textToBeMoved.getLayoutBounds().getWidth());
+			newX += round(textToBeMoved.getLayoutBounds().getWidth());
 		}
 		buffer.resetTrav(); // reset traversal pointer
 	}

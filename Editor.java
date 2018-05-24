@@ -52,7 +52,7 @@ public class Editor extends Application {
     private int cursorY;
     private int windowHeight;
     private int windowWidth;
-    private double textHeight;
+    private int textHeight;
     private boolean enterSeen;
     private int lowerBoundY;
 
@@ -78,7 +78,7 @@ public class Editor extends Application {
 		// cursor height can be set
 		Text t = new Text(0, 0, "");
 		t.setFont(Font.font(FONT_NAME, FONT_SIZE));
-		textHeight = t.getLayoutBounds().getHeight();
+		textHeight = (int) Math.floor(t.getLayoutBounds().getHeight());
 		cursor = new Rectangle(cursorX, cursorY, 1, textHeight);
 		cursor.setFill(Color.BLACK); // sets color of rectangle to black
     }
@@ -127,7 +127,7 @@ public class Editor extends Application {
 				// Shortcut: + or =, -, s
 				if (code == KeyCode.UP) {
 					if (cursorY != STARTING_Y) {
-						while (buffer.currText().getY() > cursorY - Math.floor(textHeight)) {
+						while (buffer.currText().getY() > cursorY - textHeight) {
 							buffer.prevCurr();
 						}
 						while (buffer.currText().getX() > cursorX) {
@@ -140,12 +140,12 @@ public class Editor extends Application {
 					}
 				} else if (code == KeyCode.DOWN) {
 					if (lowerBoundY > cursorY) {
-						while (buffer.nextText().getY() < cursorY + Math.floor(textHeight)) {
+						while (buffer.nextText().getY() < cursorY + textHeight) {
 							buffer.nextCurr();
 						}
 						buffer.nextCurr();
                         while (buffer.nextText() != null &&  buffer.nextText().getX() < cursorX
-                                && buffer.nextText().getY() <= cursorY + Math.floor(textHeight)) {
+                                && buffer.nextText().getY() <= cursorY + textHeight) {
                             buffer.nextCurr();
                         }
 
@@ -193,8 +193,8 @@ public class Editor extends Application {
 							updateCursor(STARTING_X, STARTING_Y);
 						}
 						setCursor(cursorX, cursorY);
+						reformat();
 					}
-					reformat();
 				} else if (code == KeyCode.ENTER) {
 				    // If pressing enter at starting X,Y, need to add a place holder "\r" at the 1st line
                     // so that you can get back to that position
@@ -225,7 +225,7 @@ public class Editor extends Application {
 
     private void newline() {
         updateCursor(STARTING_X, cursorY + textHeight);
-        lowerBoundY += Math.floor(textHeight);
+        lowerBoundY += textHeight;
     }
 
     private void updateCursor(double x, double y) {
@@ -258,23 +258,23 @@ public class Editor extends Application {
      * Assumes that cursor is in correct position
      */
     private void reformat() {
-        int newX = cursorX;
-        int newY = cursorY;
+        int X = cursorX;
+        int Y = cursorY;
+        Text textToBeMoved = null;
         while (buffer.hasNextTrav()) {
-            Text textToBeMoved = buffer.nextTrav();
-            if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - MARGIN
+            textToBeMoved = buffer.nextTrav();
+            if (X + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - MARGIN
                     || textToBeMoved.getText().equals("\r")) {
-                newX = STARTING_X;
-                newY += textHeight;
+                X = STARTING_X;
+                Y += textHeight;
             }
-            textToBeMoved.setX(newX);
-            textToBeMoved.setY(round(newY));
-            newX += round(textToBeMoved.getLayoutBounds().getWidth());
+            textToBeMoved.setX(X);
+            textToBeMoved.setY(Y);
+            X = round(X + textToBeMoved.getLayoutBounds().getWidth());
         }
 
-        Text text = buffer.currText();
-        if (text != null && text.getY() > lowerBoundY) {
-            lowerBoundY = round(buffer.currText().getY());
+        if (textToBeMoved != null) {
+            lowerBoundY = (int) textToBeMoved.getY();
         }
 
         buffer.resetTrav(); // reset traversal pointer

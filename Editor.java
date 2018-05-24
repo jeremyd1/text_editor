@@ -196,7 +196,6 @@ public class Editor extends Application {
 					}
 					reformat();
 				} else if (code == KeyCode.ENTER) {
-
 				    // If pressing enter at starting X,Y, need to add a place holder "\r" at the 1st line
                     // so that you can get back to that position
 					if (text == null) {
@@ -211,27 +210,10 @@ public class Editor extends Application {
                     }
 				    newline();
 					setCursor(cursorX, cursorY);
-					reformat();
 				}
 				enterSeen = false;
 			}
 		}
-
-        private void newline() {
-            cursorX = STARTING_X;
-            cursorY += textHeight;
-        }
-
-        private void setCursorInBestPos() {
-            Text text = buffer.currText();
-            if (Math.abs(text.getX() - cursorX) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - cursorX)) {
-                updateCursor(text.getX(), text.getY());
-                buffer.prevCurr();
-            } else {
-                updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
-            }
-            setCursor(cursorX, cursorY);
-        }
 
         private void skipOverEnter(Text text, KeyEvent keyEvent) {
             if (text.getText().equals("\r") && !enterSeen) {
@@ -241,6 +223,11 @@ public class Editor extends Application {
         }
 	}
 
+    private void newline() {
+        updateCursor(STARTING_X, cursorY + textHeight);
+        lowerBoundY += Math.floor(textHeight);
+    }
+
     private void updateCursor(double x, double y) {
         cursorX = round(x);
         cursorY = round(y);
@@ -249,6 +236,17 @@ public class Editor extends Application {
     private void setCursor(int x, int y) {
         cursor.setX(x);
         cursor.setY(y);
+    }
+
+    private void setCursorInBestPos() {
+        Text text = buffer.currText();
+        if (Math.abs(text.getX() - cursorX) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - cursorX)) {
+            updateCursor(text.getX(), text.getY());
+            buffer.prevCurr();
+        } else {
+            updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
+        }
+        setCursor(cursorX, cursorY);
     }
 
     private int round(double x) {

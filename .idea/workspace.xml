@@ -4,13 +4,10 @@
     <list default="true" id="6642945e-041b-442d-b729-a51627da34cd" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Editor.java" beforeDir="false" afterPath="$PROJECT_DIR$/Editor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TextBuffer.java" beforeDir="false" afterPath="$PROJECT_DIR$/TextBuffer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/text_editor/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/text_editor/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/text_editor/Editor$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/text_editor/Editor$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/text_editor/Editor$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/text_editor/Editor$2.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/text_editor/Editor$KeyEventHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/text_editor/Editor$KeyEventHandler.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/text_editor/Editor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/text_editor/Editor.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/text_editor/TextBuffer$Node.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/text_editor/TextBuffer$Node.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/text_editor/TextBuffer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/text_editor/TextBuffer.class" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -25,11 +22,15 @@
       <file leaf-file-name="Editor.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Editor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="402">
-              <caret line="316" column="92" selection-start-line="316" selection-start-column="92" selection-end-line="316" selection-end-column="92" />
+            <state relative-caret-position="583">
+              <caret line="206" column="64" selection-start-line="206" selection-start-column="64" selection-end-line="206" selection-end-column="64" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="imports" expanded="true" />
+                <element signature="e#8442#8443#0" expanded="true" />
+                <element signature="e#8483#8484#0" expanded="true" />
+                <element signature="e#12598#12599#0" expanded="true" />
+                <element signature="e#12626#12627#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -301,6 +302,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -343,6 +348,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -384,6 +393,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -425,6 +438,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -467,6 +484,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -492,6 +513,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -503,6 +528,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -514,6 +543,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -525,6 +558,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -536,6 +573,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -561,6 +602,10 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -623,11 +668,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Editor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="402">
-          <caret line="316" column="92" selection-start-line="316" selection-start-column="92" selection-end-line="316" selection-end-column="92" />
+        <state relative-caret-position="583">
+          <caret line="206" column="64" selection-start-line="206" selection-start-column="64" selection-end-line="206" selection-end-column="64" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
+            <element signature="e#8442#8443#0" expanded="true" />
+            <element signature="e#8483#8484#0" expanded="true" />
+            <element signature="e#12598#12599#0" expanded="true" />
+            <element signature="e#12626#12627#0" expanded="true" />
           </folding>
         </state>
       </provider>

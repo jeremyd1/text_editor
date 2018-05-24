@@ -196,7 +196,20 @@ public class Editor extends Application {
 					}
 					reformat();
 				} else if (code == KeyCode.ENTER) {
-					newline();
+
+				    // If pressing enter at starting X,Y, need to add a place holder "\r" at the 1st line
+                    // so that you can get back to that position
+					if (text == null) {
+					    Text placeHolderText = new Text("\r");
+					    placeHolderText.setX(STARTING_X);
+					    placeHolderText.setY(STARTING_Y);
+					    placeHolderText.setTextOrigin(VPos.TOP);
+					    placeHolderText.setFont(Font.font(FONT_NAME, FONT_SIZE));
+
+					    buffer.add(placeHolderText);
+					    root.getChildren().add(placeHolderText);
+                    }
+				    newline();
 					setCursor(cursorX, cursorY);
 					reformat();
 				}

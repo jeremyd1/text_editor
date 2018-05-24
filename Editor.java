@@ -5,6 +5,7 @@
  */
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -24,6 +25,7 @@ import javafx.scene.image.Image;
 import java.io.File;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.ChangeListener;
+import javafx.scene.input.MouseEvent;
 
 
 /**
@@ -83,7 +85,14 @@ public class Editor extends Application {
 		cursor.setFill(Color.BLACK); // sets color of rectangle to black
     }
 
-	/** Event Handler for handling keys that get pressed */
+
+
+
+	/****************************************************
+     * Event Handler for handling keys that get pressed *
+     ***************************************************/
+
+
 	private class KeyEventHandler implements EventHandler<KeyEvent> {
 		private Text textToDisplay;
 
@@ -136,7 +145,7 @@ public class Editor extends Application {
 
 						// Update cursor to either be on left or right side of character ABOVE
 						// depending on which side is closer to cursorX
-						setCursorInBestPos();
+						setCursorToClosest(cursorX);
 					}
 				} else if (code == KeyCode.DOWN) {
 					if (lowerBoundY > cursorY) {
@@ -151,7 +160,7 @@ public class Editor extends Application {
 
                         // Update cursor to either be on left or right side of character BELOW
                         // depending on which side is closer to cursorX
-                        setCursorInBestPos();
+                        setCursorToClosest(cursorX);
 					}
 				} else if (code == KeyCode.LEFT) {
 					if (text != null) {
@@ -238,9 +247,9 @@ public class Editor extends Application {
         cursor.setY(y);
     }
 
-    private void setCursorInBestPos() {
+    private void setCursorToClosest(double x) {
         Text text = buffer.currText();
-        if (Math.abs(text.getX() - cursorX) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - cursorX)) {
+        if (Math.abs(text.getX() - x) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - x)) {
             updateCursor(text.getX(), text.getY());
             buffer.prevCurr();
         } else {
@@ -294,6 +303,37 @@ public class Editor extends Application {
         setCursor(cursorX, cursorY);
     }
 
+
+
+    /**********************************************
+     * Event Handler for handling blinking cursor *
+     *********************************************/
+
+
+    public class BlinkCursorHandler implements EventHandler<ActionEvent> {
+        private int currentColorIndex;
+        private Color[] boxColors;
+        private Rectangle cursor;
+
+        public BlinkCursorHandler(Rectangle r) {
+            cursor = r;
+            currentColorIndex = 0;
+            boxColors =  new Color[] {Color.BLACK, Color.WHITE};
+            changeColor();
+        }
+
+        private void changeColor() {
+            cursor.setFill(boxColors[currentColorIndex]);
+            currentColorIndex = (currentColorIndex + 1) % boxColors.length;
+        }
+
+        @Override
+        public void handle(ActionEvent event) {
+            changeColor();
+        }
+    }
+
+
     private void makeCursorBlink() {
     	final Timeline timeline = new Timeline();
     	timeline.setCycleCount(Timeline.INDEFINITE);
@@ -303,11 +343,55 @@ public class Editor extends Application {
     	timeline.play();
     }
 
+
+
+    /*******************************************
+     * Event Handler for handling Mouse Clicks *
+     *******************************************/
+
+
+    private class MouseClickHandler implements EventHandler<MouseEvent> {
+        @Override
+        public void handle(MouseEvent mouseEvent) {
+            double mousePressedX = mouseEvent.getX();
+            double mousePressedY = mouseEvent.getY();
+
+            int targetY = roundToLowestY(mousePressedY);
+            if (cursorY < targetY) {
+                while (buffer.currText().getY() < targetY) {
+                    buffer.nextCurr();
+                }
+            } else if (cursorY > targetY) {
+                while (buffer.currText().getY() > targetY) {
+                    buffer.prevCurr();
+                }
+            }
+
+            if (buffer.currText().getX() > mousePressedX) {
+                while (buffer.currText().getX() > mousePressedX) {
+                    buffer.prevCurr();
+                }
+            } else if (buffer.currText().getX() < mousePressedX) {
+                while (buffer.nextText().getX() < mousePressedX) {
+                    buffer.nextCurr();
+                }
+            }
+            setCursorToClosest(mousePressedX);
+        }
+
+        private int roundToLowestY(double Y) {
+            return textHeight * (int) Math.floor(Y / textHeight);
+        }
+    }
+
+
     @Override
     public void start(Stage stage) {
         root = new Group();
         Scene scene = new Scene(root, STARTING_WINDOW_WIDTH, STARTING_WINDOW_HEIGHT);
 
+
+        // Resizing Window
         // Set the image view and listeners
         final Image image = new Image(new File("image.jpg").toURI().toString());
         final ImageView imageView = new ImageView(image);
@@ -317,6 +401,7 @@ public class Editor extends Application {
         imageView.setY(STARTING_Y);
         root.getChildren().add(imageView);
 
+        // Add listeners to detect when window size changes
         scene.widthProperty().addListener(new ChangeListener<Number>() {
             @Override public void changed(
                 ObservableValue<? extends Number> observableValue,
@@ -342,6 +427,9 @@ public class Editor extends Application {
         // Add blinking cursor to screen
         root.getChildren().add(cursor);
         makeCursorBlink();
+
+        // Add mouse click
+        scene.setOnMouseClicked(new MouseClickHandler());
 
 		// Once KeyEventHandler object is instantiated, it calls on the handle method
 		// to handle the KeyEvent every time a key is pressed/typed

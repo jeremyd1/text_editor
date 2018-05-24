@@ -7,11 +7,13 @@ public class TextBuffer {
     private Node sentinel;
     private Node curr; // stores pointer to the current node you're at
     private Node traverser; // pointer used to traverse the buffer
+    private Node temp;
 
     public TextBuffer() {
         sentinel = new Node();
         curr = sentinel;
         traverser = curr;
+        temp = null;
     }
 
     /**
@@ -84,6 +86,16 @@ public class TextBuffer {
             return null;
         }
         return curr.prev.data;
+    }
+
+    public void currToSentinel() {
+        temp = curr;
+        curr = sentinel;
+    }
+
+    public void resetCurr() {
+        curr = temp;
+        temp = null;
     }
 
     /** Returns the Text object at current node */

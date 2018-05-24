@@ -19,6 +19,11 @@ import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import javafx.geometry.VPos;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
+import java.io.File;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ChangeListener;
 
 
 /**
@@ -37,9 +42,7 @@ import javafx.geometry.VPos;
  *
  */
 
-// TODO: FIX UP COMMAND
-// TODO: IMPLEMENT DOWN COMMAND
-
+// TODO: FIX DOWN COMMAND
 
 public class Editor extends Application {
     private Group root;
@@ -55,6 +58,7 @@ public class Editor extends Application {
 
     private final static int STARTING_WINDOW_HEIGHT = 500;
     private final static int STARTING_WINDOW_WIDTH = 500;
+    private final static int MARGIN = 5;
     private final static int FONT_SIZE = 12;
     private final static String FONT_NAME = "Verdana";
     private final static int STARTING_X = 5;
@@ -100,7 +104,7 @@ public class Editor extends Application {
 
 					int prevX = cursorX;
 					updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
-					if (cursorX > windowWidth - 5) { // if at end of line, move cursor to new line and display Text there
+					if (cursorX > windowWidth - MARGIN) { // if at end of line, move cursor to new line and display Text there
 						newline();
 						textToDisplay.setX(cursorX);
 						textToDisplay.setY(cursorY);
@@ -200,60 +204,12 @@ public class Editor extends Application {
 			}
 		}
 
-		private void newline() {
-			cursorX = STARTING_X;
-			cursorY += textHeight;
-		}
-
-		private void updateCursor(double x, double y) {
-			cursorX = round(x);
-			cursorY = round(y);
-		}
-
-		private void setCursor(int x, int y) {
-			cursor.setX(x);
-			cursor.setY(y);
-		}
-
-		private int round(double x) {
-			return (int) Math.rint(x);
-		}
-
-		/**
-		 * Reformats all of the Text after the cursor
-		 * Assumes that cursor is in correct position
-		 */
-		private void reformat() {
-			int newX = cursorX;
-			int newY = cursorY;
-			while (buffer.hasNextTrav()) {
-				Text textToBeMoved = buffer.nextTrav();
-				if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - 5
-						|| textToBeMoved.getText().equals("\r")) {
-					newX = STARTING_X;
-					newY += textHeight;
-				}
-				textToBeMoved.setX(newX);
-				textToBeMoved.setY(round(newY));
-				newX += round(textToBeMoved.getLayoutBounds().getWidth());
-			}
-
-			Text text = buffer.currText();
-			if (text != null && text.getY() > lowerBoundY) {
-				lowerBoundY = round(buffer.currText().getY());
-			}
-
-			buffer.resetTrav(); // reset traversal pointer
-		}
-
-		private void skipOverEnter(Text text, KeyEvent keyEvent) {
-            if (text.getText().equals("\r") && !enterSeen) {
-                enterSeen = true;
-                this.handle(keyEvent);
-            }
+        private void newline() {
+            cursorX = STARTING_X;
+            cursorY += textHeight;
         }
 
-		private void setCursorInBestPos() {
+        private void setCursorInBestPos() {
             Text text = buffer.currText();
             if (Math.abs(text.getX() - cursorX) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - cursorX)) {
                 updateCursor(text.getX(), text.getY());
@@ -263,8 +219,69 @@ public class Editor extends Application {
             }
             setCursor(cursorX, cursorY);
         }
+
+        private void skipOverEnter(Text text, KeyEvent keyEvent) {
+            if (text.getText().equals("\r") && !enterSeen) {
+                enterSeen = true;
+                this.handle(keyEvent);
+            }
+        }
 	}
 
+    private void updateCursor(double x, double y) {
+        cursorX = round(x);
+        cursorY = round(y);
+    }
+
+    private void setCursor(int x, int y) {
+        cursor.setX(x);
+        cursor.setY(y);
+    }
+
+    private int round(double x) {
+        return (int) Math.rint(x);
+    }
+
+    /**
+     * Reformats all of the Text after the cursor
+     * Assumes that cursor is in correct position
+     */
+    private void reformat() {
+        int newX = cursorX;
+        int newY = cursorY;
+        while (buffer.hasNextTrav()) {
+            Text textToBeMoved = buffer.nextTrav();
+            if (newX + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - MARGIN
+                    || textToBeMoved.getText().equals("\r")) {
+                newX = STARTING_X;
+                newY += textHeight;
+            }
+            textToBeMoved.setX(newX);
+            textToBeMoved.setY(round(newY));
+            newX += round(textToBeMoved.getLayoutBounds().getWidth());
+        }
+
+        Text text = buffer.currText();
+        if (text != null && text.getY() > lowerBoundY) {
+            lowerBoundY = round(buffer.currText().getY());
+        }
+
+        buffer.resetTrav(); // reset traversal pointer
+    }
+
+    private void reformatFromBeginning() {
+        cursorX = STARTING_X;
+        cursorY = STARTING_Y;
+
+        buffer.currToSentinel();
+        reformat();
+        buffer.resetCurr();
+
+        // Update and set cursor dynamically according to the Text obj it was adjacent to before reformatting
+        Text text = buffer.currText();
+        updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
+        setCursor(cursorX, cursorY);
+    }
 
     private void makeCursorBlink() {
     	final Timeline timeline = new Timeline();
@@ -280,7 +297,38 @@ public class Editor extends Application {
         root = new Group();
         Scene scene = new Scene(root, STARTING_WINDOW_WIDTH, STARTING_WINDOW_HEIGHT);
 
-        // Add blinking cursor to screen 
+        // Set the image view and listeners
+        final Image image = new Image(new File("image.jpg").toURI().toString());
+        final ImageView imageView = new ImageView(image);
+        imageView.setFitHeight(STARTING_WINDOW_HEIGHT);
+        imageView.setFitWidth(STARTING_WINDOW_WIDTH - 2 * MARGIN);
+        imageView.setX(STARTING_X);
+        imageView.setY(STARTING_Y);
+        root.getChildren().add(imageView);
+
+        scene.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override public void changed(
+                ObservableValue<? extends Number> observableValue,
+                Number oldScreenWidth,
+                Number newScreenWidth) {
+                    windowWidth = newScreenWidth.intValue();
+                    int newImageWidth = windowWidth - 2 * MARGIN;
+                    imageView.setFitWidth(newImageWidth);
+                    reformatFromBeginning(); // only need to reformat when width is adjusted
+                }
+        });
+        scene.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override public void changed(
+                ObservableValue<? extends Number> observableValue,
+                Number oldScreenHeight,
+                Number newScreenHeight) {
+                    windowHeight = newScreenHeight.intValue();
+                    int newImageHeight = windowHeight;
+                    imageView.setFitHeight(newImageHeight);
+                }
+        });
+
+        // Add blinking cursor to screen
         root.getChildren().add(cursor);
         makeCursorBlink();
 
@@ -299,7 +347,3 @@ public class Editor extends Application {
         launch(args);
     }
 }
-
-
-
-

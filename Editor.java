@@ -285,7 +285,9 @@ public class Editor extends Application {
 
     private void setCursorToClosest(double x) {
         Text text = buffer.currText();
-        if (Math.abs(text.getX() - x) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - x)) {
+        if (text == null) {
+            updateCursor(STARTING_X, STARTING_Y);
+        } else if (Math.abs(text.getX() - x) < Math.abs(text.getX() + text.getLayoutBounds().getWidth() - x)) {
             updateCursor(text.getX(), text.getY());
             buffer.prevCurr();
         } else {
@@ -401,27 +403,64 @@ public class Editor extends Application {
             double mousePressedY = mouseEvent.getY();
 
             int targetY = roundToLowestY(mousePressedY);
-            if (cursorY < targetY) {
-                while (buffer.currText().getY() < targetY) {
-                    buffer.nextCurr();
-                }
-            } else if (cursorY > targetY) {
-                while (buffer.currText().getY() > targetY) {
-                    buffer.prevCurr();
-                }
-            }
 
-            if (buffer.currText().getX() > mousePressedX) {
-                while (buffer.currText().getX() > mousePressedX) {
-                    buffer.prevCurr();
+            // If mouse click is below the lowest Y, set cursor to last Text object
+            if (targetY > lowerBoundY) {
+                if (buffer.currText() == null) {
+                    if (buffer.nextText() != null) {
+                        buffer.nextCurr();
+                    } else {
+                        return;
+                    }
                 }
-            } else if (buffer.currText().getX() < mousePressedX) {
-                while (buffer.nextText().getX() < mousePressedX) {
+
+                while (buffer.nextText() != null) {
                     buffer.nextCurr();
                 }
+
+                Text text = buffer.currText();
+                updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
+                setCursor(cursorX, cursorY);
+            } else {
+                if (cursorY < targetY) {
+                    if (buffer.currText() == null) {
+                        if (buffer.nextText() != null) {
+                            buffer.nextCurr();
+                        } else {
+                            return;
+                        }
+                    }
+                    while (buffer.currText() != null && buffer.currText().getY() < targetY) {
+                        buffer.nextCurr();
+                    }
+                } else if (cursorY > targetY) {
+                    while (buffer.currText() != null && buffer.currText().getY() > targetY) {
+                        buffer.prevCurr();
+                    }
+                }
+
+                if (buffer.currText() == null) {
+                    if (buffer.nextText() != null) {
+                        buffer.nextCurr();
+                    } else {
+                        return;
+                    }
+                }
+                if (buffer.currText().getX() > mousePressedX) {
+                    while (buffer.currText() != null && buffer.currText().getX() > mousePressedX
+                            && buffer.currText().getY() == targetY) {
+                        buffer.prevCurr();
+                    }
+                } else if (buffer.currText().getX() < mousePressedX) {
+                    while (buffer.nextText() != null && buffer.nextText().getX() < mousePressedX
+                            && buffer.nextText().getY() == targetY) {
+                        buffer.nextCurr();
+                    }
+                }
+                setCursorToClosest(mousePressedX);
             }
-            setCursorToClosest(mousePressedX);
         }
+
 
         private int roundToLowestY(double Y) {
             return textHeight * (int) Math.floor(Y / textHeight);

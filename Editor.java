@@ -23,9 +23,16 @@ import javafx.geometry.VPos;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.input.MouseEvent;
+import java.util.List;
+
 
 
 /**
@@ -44,7 +51,9 @@ import javafx.scene.input.MouseEvent;
  *
  */
 
-// TODO: FIX DOWN COMMAND
+// TODO: NEED UP, DOWN ARROW KEYS TO REMEMBER PREV POSITION
+// TODO: MOUSE CLICKER
+// TODO: LOAD AND SAVE
 
 public class Editor extends Application {
     private Group root;
@@ -57,6 +66,7 @@ public class Editor extends Application {
     private int textHeight;
     private boolean enterSeen;
     private int lowerBoundY;
+    private File file;
 
     private final static int STARTING_WINDOW_HEIGHT = 500;
     private final static int STARTING_WINDOW_WIDTH = 500;
@@ -94,47 +104,46 @@ public class Editor extends Application {
 
 
 	private class KeyEventHandler implements EventHandler<KeyEvent> {
-		private Text textToDisplay;
 
 		@Override
 		public void handle(KeyEvent keyEvent) {
 			// Check if a character-generating key was typed
 			if (keyEvent.getEventType() == keyEvent.KEY_TYPED) {
 				String character = keyEvent.getCharacter();
-				if (character.length() > 0 && character.charAt(0) != 8 && !keyEvent.isShortcutDown()) {
-					// Create a new text object containing the typed character
-					textToDisplay = new Text(character);
-					textToDisplay.setTextOrigin(VPos.TOP);
-					textToDisplay.setFont(Font.font(FONT_NAME, FONT_SIZE));
-
-					// Add Text to buffer and scene graph
-					buffer.add(textToDisplay);
-					root.getChildren().add(textToDisplay);
-
-					int prevX = cursorX;
-					updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
-					if (cursorX > windowWidth - MARGIN) { // if at end of line, move cursor to new line and display Text there
-						newline();
-						textToDisplay.setX(cursorX);
-						textToDisplay.setY(cursorY);
-						updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
-					} else { // display Text normally and move cursor normally
-						textToDisplay.setX(prevX);
-						textToDisplay.setY(cursorY);
-					}
-					setCursor(cursorX, cursorY);
-					reformat();
-
+                    if (!keyEvent.isShortcutDown()) {
+                        add(character);
+                    }
 					// marks key event as finished
 					keyEvent.consume();
-				}
 			} else if (keyEvent.getEventType() == keyEvent.KEY_PRESSED) {
 				KeyCode code = keyEvent.getCode(); // only key pressed key events have an associated code
 				Text text = buffer.currText();
 
-				// Need to handle arrows, backspace, shortcut keys (command), and enter
+				// Need to handle shortcuts,  arrows, backspace, and enter
 				// Shortcut: + or =, -, s
-				if (code == KeyCode.UP) {
+				if (keyEvent.isShortcutDown()) {
+				    if (code == KeyCode.S) {
+				        try {
+                            FileWriter fileWriter = new FileWriter(file);
+                            buffer.currToSentinel();
+                            buffer.nextCurr();
+                            while (buffer.currText() != null) {
+                                text = buffer.currText();
+                                if (text.getText().equals("\r")) {
+                                    fileWriter.write('\n');
+                                } else {
+                                    fileWriter.write(text.getText().toCharArray()[0]);
+                                }
+                                buffer.nextCurr();
+                            }
+                            fileWriter.close();
+                            buffer.resetCurr();
+                        } catch (IOException e) {
+				            System.out.println("Unable to write to file");
+				            return;
+                        }
+                    }
+                } else if (code == KeyCode.UP) {
 					if (cursorY != STARTING_Y) {
 						while (buffer.currText().getY() > cursorY - textHeight) {
 							buffer.prevCurr();
@@ -232,6 +241,33 @@ public class Editor extends Application {
         }
 	}
 
+	private void add(String character) {
+        if (character.length() > 0 && character.charAt(0) != 8) {
+            // Create a new text object containing the typed character
+            Text textToDisplay = new Text(character);
+            textToDisplay.setTextOrigin(VPos.TOP);
+            textToDisplay.setFont(Font.font(FONT_NAME, FONT_SIZE));
+
+            // Add Text to buffer and scene graph
+            buffer.add(textToDisplay);
+            root.getChildren().add(textToDisplay);
+
+            int prevX = cursorX;
+            updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
+            if (cursorX > windowWidth - MARGIN) { // if at end of line, move cursor to new line and display Text there
+                newline();
+                textToDisplay.setX(cursorX);
+                textToDisplay.setY(cursorY);
+                updateCursor(cursorX + textToDisplay.getLayoutBounds().getWidth(), cursorY);
+            } else { // display Text normally and move cursor normally
+                textToDisplay.setX(prevX);
+                textToDisplay.setY(cursorY);
+            }
+            setCursor(cursorX, cursorY);
+            reformat();
+        }
+    }
+
     private void newline() {
         updateCursor(STARTING_X, cursorY + textHeight);
         lowerBoundY += textHeight;
@@ -271,15 +307,21 @@ public class Editor extends Application {
         int Y = cursorY;
         Text textToBeMoved = null;
         while (buffer.hasNextTrav()) {
-            textToBeMoved = buffer.nextTrav();
-            if (X + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - MARGIN
-                    || textToBeMoved.getText().equals("\r")) {
-                X = STARTING_X;
-                Y += textHeight;
+            // When reformatting, this condition is necessary to ensure that a new line isn't created
+            // if "\r" is the first Text obj in the editor
+            if (buffer.currText() == null && buffer.nextText().getText().equals("\r")) {
+                buffer.nextCurr();
+            } else {
+                textToBeMoved = buffer.nextTrav();
+                if (X + textToBeMoved.getLayoutBounds().getWidth() > windowWidth - MARGIN
+                        || textToBeMoved.getText().equals("\r")) {
+                    X = STARTING_X;
+                    Y += textHeight;
+                }
+                textToBeMoved.setX(X);
+                textToBeMoved.setY(Y);
+                X = round(X + textToBeMoved.getLayoutBounds().getWidth());
             }
-            textToBeMoved.setX(X);
-            textToBeMoved.setY(Y);
-            X = round(X + textToBeMoved.getLayoutBounds().getWidth());
         }
 
         if (textToBeMoved != null) {
@@ -293,7 +335,7 @@ public class Editor extends Application {
         cursorX = STARTING_X;
         cursorY = STARTING_Y;
 
-        buffer.currToSentinel();
+        buffer.currToSentinel(); // by moving curr to sentinel, trav is also set to point at sentinel
         reformat();
         buffer.resetCurr();
 
@@ -302,6 +344,7 @@ public class Editor extends Application {
         updateCursor(text.getX() + text.getLayoutBounds().getWidth(), text.getY());
         setCursor(cursorX, cursorY);
     }
+
 
 
 
@@ -342,6 +385,7 @@ public class Editor extends Application {
     	timeline.getKeyFrames().add(keyFrame); // add blinking key frame to timeline
     	timeline.play();
     }
+
 
 
 
@@ -390,7 +434,6 @@ public class Editor extends Application {
         root = new Group();
         Scene scene = new Scene(root, STARTING_WINDOW_WIDTH, STARTING_WINDOW_HEIGHT);
 
-
         // Resizing Window
         // Set the image view and listeners
         final Image image = new Image(new File("image.jpg").toURI().toString());
@@ -437,7 +480,47 @@ public class Editor extends Application {
 		scene.setOnKeyTyped(keyEventHandler);
 		scene.setOnKeyPressed(keyEventHandler);
 
-        stage.setTitle("Jeremy's Editor");
+		// Read in File if it exists
+        List<String> params = getParameters().getRaw();
+        if (params.size()!= 1) {
+            System.out.println("Expected Usage: Editor <filename>");
+            System.exit(1);
+        }
+        String fileName = params.get(0);
+
+        try {
+            file = new File(fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            } else {
+                FileReader reader = new FileReader(fileName);
+                BufferedReader bufferedReader = new BufferedReader(reader);
+
+                int intRead = -1;
+                while ((intRead = bufferedReader.read()) != -1) {
+                    char charRead = (char) intRead;
+                    if (charRead == '\n') {
+                        add("\r");
+                    } else {
+                        add(Character.toString(charRead));
+                    }
+                }
+                bufferedReader.close();
+                buffer.currToSentinel();
+                updateCursor(STARTING_X, STARTING_Y);
+                setCursor(cursorX, cursorY);
+                reformat();
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to open file " + fileName);
+            return;
+        } catch (IOException e) {
+            System.out.println("Unable to read file " + fileName);
+            return;
+        }
+
+
+        stage.setTitle(fileName);
         stage.setScene(scene);
         stage.show();
     }

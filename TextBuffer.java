@@ -91,11 +91,14 @@ public class TextBuffer {
     public void currToSentinel() {
         temp = curr;
         curr = sentinel;
+        traverser = curr;
     }
 
     public void resetCurr() {
         curr = temp;
         temp = null;
+        traverser = curr;
+
     }
 
     /** Returns the Text object at current node */

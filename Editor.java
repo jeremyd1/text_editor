@@ -51,10 +51,6 @@ import java.util.List;
  *
  */
 
-// TODO: NEED UP, DOWN ARROW KEYS TO REMEMBER PREV POSITION
-// TODO: MOUSE CLICKER
-// TODO: LOAD AND SAVE
-
 public class Editor extends Application {
     private Group root;
     private TextBuffer buffer;
@@ -98,7 +94,7 @@ public class Editor extends Application {
 
 
 
-	/****************************************************
+	 /***************************************************
      * Event Handler for handling keys that get pressed *
      ***************************************************/
 
@@ -378,7 +374,6 @@ public class Editor extends Application {
         }
     }
 
-
     private void makeCursorBlink() {
     	final Timeline timeline = new Timeline();
     	timeline.setCycleCount(Timeline.INDEFINITE);
@@ -460,7 +455,6 @@ public class Editor extends Application {
                 setCursorToClosest(mousePressedX);
             }
         }
-
 
         private int roundToLowestY(double Y) {
             return textHeight * (int) Math.floor(Y / textHeight);

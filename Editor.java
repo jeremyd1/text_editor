@@ -94,7 +94,7 @@ public class Editor extends Application {
 
 
 
-	 /***************************************************
+     /***************************************************
      * Event Handler for handling keys that get pressed *
      ***************************************************/
 
